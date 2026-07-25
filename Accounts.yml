@@ -1,0 +1,32 @@
+info:
+  name: Accounts
+  type: http
+  seq: 6
+
+http:
+  method: GET
+  url: https://api-wired-prod-1-euw1.wrd-aws.com/commerce/v1/persons/{{person_id}}?country={{country}}
+  headers:
+    - name: apikey
+      value: "{{kamereon_apikey}}"
+    - name: x-gigya-id_token
+      value: "{{jwt_token}}"
+  params:
+    - name: country
+      value: "{{country}}"
+      type: query
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const data = res.getBody();
+        const myRenaultAccount = data.accounts.find(a => a.accountType === "MYRENAULT");
+        bru.setVar("account_id", myRenaultAccount.accountId);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

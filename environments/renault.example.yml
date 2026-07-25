@@ -1,0 +1,12 @@
+name: renault
+variables:
+  - name: renault_email
+    value: your-email@example.com
+  - name: renault_password
+    value: your-password
+  - name: gigya_apikey
+    value: 3_VgdkgtIRH3AdHvJm-cjV2ug2EFE0lxt0IJzMC4MFqZjFpn_GYFXVdNZ19L7wZX0N
+  - name: kamereon_apikey
+    value: YjkKtHmGfaceeuExUDKGxrLZGGvtVS0J
+  - name: country
+    value: DE

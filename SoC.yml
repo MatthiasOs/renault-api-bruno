@@ -1,0 +1,24 @@
+info:
+  name: SoC
+  type: http
+  seq: 6
+
+http:
+  method: GET
+  url: https://api-wired-prod-1-euw1.wrd-aws.com/commerce/v1/accounts/{{account_id}}/kamereon/kca/car-adapter/v2/cars/{{vin}}/battery-status?country={{country}}
+  headers:
+    - name: apikey
+      value: "{{kamereon_apikey}}"
+    - name: x-gigya-id_token
+      value: "{{jwt_token}}"
+  params:
+    - name: country
+      value: "{{country}}"
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

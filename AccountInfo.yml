@@ -1,0 +1,31 @@
+info:
+  name: AccountInfo
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: https://accounts.eu1.gigya.com/accounts.getAccountInfo
+  body:
+    type: form-urlencoded
+    data:
+      - name: ApiKey
+        value: "{{gigya_apikey}}"
+      - name: login_token
+        value: "{{login_token}}"
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const data = res.getBody();
+        bru.setVar("person_id", data.data.personId);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: '"sessionInfo.cookieValue" aus Schritt "login" als login_token verwenden'

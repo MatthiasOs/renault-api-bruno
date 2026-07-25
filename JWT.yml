@@ -1,0 +1,33 @@
+info:
+  name: JWT
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: https://accounts.eu1.gigya.com/accounts.getJWT
+  body:
+    type: form-urlencoded
+    data:
+      - name: ApiKey
+        value: "{{gigya_apikey}}"
+      - name: login_token
+        value: "{{login_token}}"
+      - name: fields
+        value: data.personId,data.gigyaDataCenter
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const data = res.getBody();
+        bru.setVar("jwt_token", data.id_token);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: '"sessionInfo.cookieValue" aus Schritt "login" als login_token verwenden'

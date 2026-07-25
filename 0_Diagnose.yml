@@ -1,0 +1,82 @@
+info:
+  name: 0_Diagnose
+  type: http
+  seq: 15
+
+http:
+  method: GET
+  url: https://example.com
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: before-request
+      code: |-
+        //Ausage in der Konsole, NICHT im Response Fenster
+        function checkGigyaError(res, step) {
+          const body = res?.data;
+          if (!body) throw new Error(`[${step}] Leere Antwort erhalten`);
+          if (body.errorCode && body.errorCode !== 0) {
+            throw new Error(`[${step}] Gigya-Fehler ${body.errorCode}: ${body.errorMessage} (${body.errorDetails || ""})`);
+          }
+        }
+
+        function checkKamereonError(res, step) {
+          const body = res?.data;
+          if (!body) throw new Error(`[${step}] Leere Antwort erhalten`);
+          if (body.errors || body.type === "FUNCTIONAL" || body.type === "TECHNICAL") {
+            const code = body.errors?.[0]?.errorCode || body.messages?.[0]?.code;
+            const msg = body.errors?.[0]?.errorMessage || body.messages?.[0]?.message;
+            throw new Error(`[${step}] Kamereon-Fehler ${code}: ${msg}`);
+          }
+        }
+
+        try {
+          console.log("→ Login...");
+          const loginRes = await bru.runRequest("Login");
+          checkGigyaError(loginRes, "Login");
+          bru.setVar("login_token", loginRes.data.sessionInfo.cookieValue);
+
+          console.log("→ JWT...");
+          const jwtRes = await bru.runRequest("JWT");
+          checkGigyaError(jwtRes, "JWT");
+          bru.setVar("jwt_token", jwtRes.data.id_token);
+
+          console.log("→ AccountInfo...");
+          const accInfoRes = await bru.runRequest("AccountInfo");
+          checkGigyaError(accInfoRes, "AccountInfo");
+          bru.setVar("person_id", accInfoRes.data.data.personId);
+
+          console.log("→ Accounts...");
+          const accountsRes = await bru.runRequest("Accounts");
+          checkKamereonError(accountsRes, "Accounts");
+          const myRenaultAccount = accountsRes.data.accounts.find(a => a.accountType === "MYRENAULT");
+          if (!myRenaultAccount) throw new Error("[Accounts] Kein MYRENAULT-Account gefunden");
+          bru.setVar("account_id", myRenaultAccount.accountId);
+
+          console.log("→ Cars...");
+          const carsRes = await bru.runRequest("Cars");
+          checkKamereonError(carsRes, "Cars");
+          const vehicle = carsRes.data.vehicleLinks[0];
+          bru.setVar("vin", vehicle.vin);
+          if (!vehicle.connectedDriver?.role) {
+            console.warn("⚠️  connectedDriver.role ist leer – Fahrzeug evtl. nicht vollständig verknüpft");
+          }
+
+          console.log("→ SoC...");
+          const socRes = await bru.runRequest("SoC");
+          checkKamereonError(socRes, "SoC");
+          const soc = socRes.data.data.attributes.batteryLevel;
+          bru.setVar("soc", soc);
+
+          console.log(`✅ Erfolgreich! SoC: ${soc}%`);
+        } catch (err) {
+          console.error("❌ Diagnose fehlgeschlagen:", err.message);
+          bru.setVar("last_error", err.message);
+        }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

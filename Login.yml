@@ -1,0 +1,33 @@
+info:
+  name: Login
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: https://accounts.eu1.gigya.com/accounts.login
+  body:
+    type: form-urlencoded
+    data:
+      - name: ApiKey
+        value: "{{gigya_apikey}}"
+      - name: loginID
+        value: "{{renault_email}}"
+      - name: password
+        value: "{{renault_password}}"
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const data = res.getBody();
+        bru.setVar("login_token", data.sessionInfo.cookieValue);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: cookieValue weiter verwenden

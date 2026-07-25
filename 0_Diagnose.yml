@@ -12,7 +12,7 @@ runtime:
   scripts:
     - type: before-request
       code: |-
-        //Ausage in der Konsole, NICHT im Response Fenster
+        //Ausgabe in der Konsole, NICHT im Response Fenster
         function checkGigyaError(res, step) {
           const body = res?.data;
           if (!body) throw new Error(`[${step}] Leere Antwort erhalten`);

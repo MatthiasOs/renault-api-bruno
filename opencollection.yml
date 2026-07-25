@@ -16,7 +16,7 @@ config:
 
 docs:
   content: |
-    # Siehe README.md im Projekt-Root für die vollständige Dokumentation.
+    # Siehe [README.md](https://github.com/MatthiasOs/renault-api-bruno/blob/main/README.md) im Projekt-Root für die vollständige Dokumentation.
   type: text/markdown
 bundled: false
 extensions:
